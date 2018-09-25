@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Books.Api.Contexts;
 using Books.Api.Services;
+using Books.Legacy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,8 @@ namespace Books.Api
             services.AddDbContext<BooksContext>(o => o.UseSqlServer(connectionString));
 
             services.AddScoped<IBooksRepository, BooksRepository>();
+
+            services.AddTransient<ComplicatedPageCalculator>();
 
             services.AddAutoMapper(); 
         }  

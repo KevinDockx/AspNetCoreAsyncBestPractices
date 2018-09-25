@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Books.Api.Models;
 using Books.Api.Services;
+using Books.Legacy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,14 +16,18 @@ namespace Books.Api.Controllers
         private readonly IBooksRepository _booksRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<BooksController> _logger;
+        private readonly ComplicatedPageCalculator _complicatedPageCalculator;
 
         public BooksController(IBooksRepository booksRepository,
-            IMapper mapper,  ILogger<BooksController> logger)
+            IMapper mapper,  ILogger<BooksController> logger,
+            ComplicatedPageCalculator complicatedPageCalculator)
         {
             _booksRepository = booksRepository 
                 ?? throw new ArgumentNullException(nameof(booksRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _complicatedPageCalculator = complicatedPageCalculator ?? 
+                throw new ArgumentNullException(nameof(complicatedPageCalculator)); 
         }
  
         [HttpGet]
@@ -39,12 +44,12 @@ namespace Books.Api.Controllers
 
             // calculate the book pages 
             // DON'T DO THIS, this is sample code for a bad practice!
-            _logger.LogInformation($"ThreadId when entering GetBookAsync: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            _logger.LogInformation($"ThreadId when entering GetBook: " +
+                $"{System.Threading.Thread.CurrentThread.ManagedThreadId}");
             var bookPages = await GetBookPages(id);
 
             // good way to call legacy computational-bound code is by NOT offloading it to the background
-            //var pageCalculator = new Books.Legacy.ComplicatedPageCalculator();
-            //var bookPages = pageCalculator.CalculateBookPages(id);
+            //var bookPages = _complicatedPageCalculator.CalculateBookPages(id);
 
             return Ok(_mapper.Map<Models.Book>(bookEntity));
         }
@@ -59,10 +64,10 @@ namespace Books.Api.Controllers
         {
             return Task.Run(() =>
             {
-                _logger.LogInformation($"ThreadId when calculating the amount of pages: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+                _logger.LogInformation($"ThreadId when calculating the amount of pages: " +
+                    $"{System.Threading.Thread.CurrentThread.ManagedThreadId}");
 
-                var pageCalculator = new Books.Legacy.ComplicatedPageCalculator();
-                return pageCalculator.CalculateBookPages(id);
+                return _complicatedPageCalculator.CalculateBookPages(id);
             });
         }
 

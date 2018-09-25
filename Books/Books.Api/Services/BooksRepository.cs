@@ -3,7 +3,6 @@ using Books.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Books.Api.Services
@@ -13,7 +12,7 @@ namespace Books.Api.Services
         private BooksContext _context;
         private readonly ILogger<BooksRepository> _logger;
 
-        public BooksRepository(BooksContext context, IHttpClientFactory httpClientFactory,
+        public BooksRepository(BooksContext context,  
               ILogger<BooksRepository> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
