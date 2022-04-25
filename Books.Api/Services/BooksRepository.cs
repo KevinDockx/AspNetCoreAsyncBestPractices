@@ -96,6 +96,65 @@ namespace Books.Api.Services
             }
         }
 
+        public async Task<IEnumerable<BookCover>> GetBookCoversWithoutCancellationAsync(Guid bookId)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var bookCovers = new List<BookCover>(); 
+
+            // create a list of fake bookcovers
+            var bookCoverUrls = new[]
+            {
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover1",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover2?returnFault=true",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover3",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover4",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover5"
+            };
+
+            // foreach + await will run them in order.  We prefer parallel.  
+            //foreach (var bookCoverUrl in bookCoverUrls)
+            //{
+            //    bookCovers.Add(
+            //        await DownloadBookCoverWithoutCancellationSupportAsync(httpClient, bookCoverUrl));
+            //}
+
+            //return bookCovers;
+
+            // create the tasks
+            var downloadBookCoverTasksQuery =
+                 from bookCoverUrl
+                 in bookCoverUrls
+                 select DownloadBookCoverWithoutCancellationSupportAsync(
+                     httpClient, bookCoverUrl);
+
+            // start the tasks
+            var downloadBookCoverTasks = downloadBookCoverTasksQuery.ToList();
+            return await Task.WhenAll(downloadBookCoverTasks);           
+        }
+
+        /// <summary>
+        /// Download book cover without cancellation support
+        /// </summary> 
+        private async Task<BookCover?> DownloadBookCoverWithoutCancellationSupportAsync(
+            HttpClient httpClient,
+            string bookCoverUrl)
+        {
+            var response = await httpClient
+                       .GetAsync(bookCoverUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var bookCover = JsonSerializer.Deserialize<BookCover>(
+                    await response.Content.ReadAsStringAsync());
+                return bookCover;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Download book cover with cancellation support
+        /// </summary> 
         private async Task<BookCover?> DownloadBookCoverAsync(
             HttpClient httpClient, 
             string bookCoverUrl, 
