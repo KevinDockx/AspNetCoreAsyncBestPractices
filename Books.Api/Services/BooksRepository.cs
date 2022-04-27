@@ -209,5 +209,10 @@ namespace Books.Api.Services
 
             return null;
         }
+
+        public IAsyncEnumerable<Book> GetBooksAsAsyncEnumerable()
+        {
+            return _context.Books.AsAsyncEnumerable<Book>();
+        }
     }
 }

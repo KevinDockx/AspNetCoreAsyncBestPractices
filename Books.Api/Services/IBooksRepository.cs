@@ -11,5 +11,7 @@ namespace Books.Api.Services
         Task<IEnumerable<BookCover>> GetBookCoversWithoutCancellationWithForEachAsync(Guid bookId);
         Task<IEnumerable<BookCover>> GetBookCoversWithoutCancellationAsync(Guid bookId);
         Task<IEnumerable<BookCover>> GetBookCoversAsync(Guid bookId);
+        IAsyncEnumerable<Book> GetBooksAsAsyncEnumerable();
+
     }
 }
